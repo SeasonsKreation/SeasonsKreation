@@ -6,10 +6,11 @@ require('dotenv').config()
 
 const Adminrouter=require('./router/routerapi')
 const mongoose=require('mongoose')
-mongoose.connect(`${process.env.DB_URl}/${process.env.DB_NAME}`)
+// mongoose.connect(`${process.env.DB_URl}/${process.env.DB_NAME}`)
 
-// const uri = "mongodb+srv://sharewithcoder:jiPbDhTcdTkjeOyi@skjewel.7eyxgqj.mongodb.net/?retryWrites=true&w=majority&appName=SKjewel";
-// mongoose.connect(uri)
+const uri = "mongodb+srv://sharewithcoder:jiPbDhTcdTkjeOyi@skjewel.7eyxgqj.mongodb.net/?retryWrites=true&w=majority&appName=SKjewel";
+const uri = "mongodb+srv://seasonskreation:o5AMOlAhSyKo6WR7@cluster0.31xa1xl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+mongoose.connect(uri)
 
 
 
