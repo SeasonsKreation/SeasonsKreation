@@ -22,6 +22,12 @@ app.use(express.static('public'))
 app.use(cors())
 app.use('/skapi',Adminrouter)
 
+app.use(express.static(__dirname)); //here is important thing - no static directory, because all static :)
+
+app.get("/*", function(req, res) {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
 const  _dirname= path.dirname("")
 const buildpath=path.join(__dirname,"../front/build")
 app.use(express.static('buildpath'))
