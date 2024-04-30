@@ -22,14 +22,17 @@ app.use(express.static('public'))
 app.use(cors())
 app.use('/skapi',Adminrouter)
 
+const  _dirname= path.dirname("")
+const buildpath=path.join(__dirname,"../front/build")
+
+
 app.use(express.static(__dirname)); //here is important thing - no static directory, because all static :)
 
 app.get("/*", function(req, res) {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-const  _dirname= path.dirname("")
-const buildpath=path.join(__dirname,"../front/build")
+
 app.use(express.static('buildpath'))
 
 app.listen(process.env.PORT,()=>{console.log(`Yeah! Great Micky Your Server is Runing on ${process.env.PORT}`)})
