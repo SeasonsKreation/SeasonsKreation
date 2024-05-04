@@ -1,11 +1,12 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Order = require("../modals/Order.js");
+const { use } = require("../router/routerapi.js");
 require("dotenv").config();
 
 exports.ordercreate = async (req, res) => {
 	try {
-		console.log("1", process.env.RAZORPAY_API_SECRET);
+		console.log("rz KEY", process.env.RAZORPAY_API_SECRET);
 
 		const instance = new Razorpay({
 			key_id: process.env.RAZORPAY_API_KEY,
@@ -28,18 +29,21 @@ exports.ordercreate = async (req, res) => {
 			addressinfo:req.body.checkoutInput,
 		});
 
-		console.log({ newOrder });
-
 		await newOrder.save();
 
 		instance.orders.create(options, (error, order) => {
+			
 			if (error) {
-				console.log(error);
+				console.log("rz failed:",error);
 				return res.status(500).json({
 					message:
 						"Something went wrong while creating razorpay order.",
+						data:
+						error,
 				});
 			}
+
+			console.log("rz order:",order)
 
 			return res.status(200).json({
 				data: order,
@@ -48,10 +52,12 @@ exports.ordercreate = async (req, res) => {
 				message: "success",
 				orderId: newOrder._id,
 			});
+
 		});
 
 
 		try {
+
 			const response = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
 			  method: 'POST',
 			  headers: {
@@ -64,27 +70,19 @@ exports.ordercreate = async (req, res) => {
 			});
 		
 			if (!response.ok) {
-			  throw new Error('Failed to login to Shiprocket');
+			  	return res.status(500).json({
+					message:
+						"Something went wrong while creating Shiprocket order.",
+				});
 			}
 		
-			const data = await response.json();
-			// Extract token from the response
-			const token = data.token;
-			placeOrderAtShip();
-			placeOrderAtShip(token)
-			console.log('Token:', token);
+			const data_ap = await response.json();
 
-			// res.status(500).json({
-			// 	message: error,
-			// 	data: token,
-			// });
-
-			
 			var data_body = JSON.stringify({
 				"order_id": "224-447",
 				"order_date": "2019-07-24 11:11",
 				"pickup_location": "Jammu",
-				"channel_id": "",
+				"channel_id": 1234,
 				"comment": "Reseller: M/s Goku",
 				"billing_customer_name": "Naruto",
 				"billing_last_name": "Uzumaki",
@@ -108,7 +106,7 @@ exports.ordercreate = async (req, res) => {
 				"shipping_email": "",
 				"shipping_phone": "",
 				"order_items": [
-				  {
+					{
 					"name": "Kunai",
 					"sku": "chakra123",
 					"units": 10,
@@ -116,7 +114,7 @@ exports.ordercreate = async (req, res) => {
 					"discount": "",
 					"tax": "",
 					"hsn": 441122
-				  }
+					}
 				],
 				"payment_method": "Prepaid",
 				"shipping_charges": 0,
@@ -129,46 +127,35 @@ exports.ordercreate = async (req, res) => {
 				"height": 20,
 				"weight": 2.5
 			  });
-		  
-		  
-		  
-		  
-			try {
-				
-			  const response = await fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
-				method: 'POST',
-				headers: {
-				  'Content-Type': 'application/json',
-				  'Authorization': 'Bearer '+token
-				},
-				body:data_body
-			  });
-		  
-			  if (!response.ok) {
-				throw new Error('Failed to Create Order');
-			  }
-		  
-			  const data = await response.json();
-			  // Extract token from the response
-			  const token = data.token;
-			  console.log('Token:', token); // Do whatever you want with the token
 
-			  res.status(200).json({
-				  message: 'Order Created Successfully',
-				  data:data,
-			  });
+			const token_ap = data_ap.token;
+			console.log("sr token",token_ap);
 
-			} catch (error) {
-			  console.error('Error:', error);
-			  res.status(500).json({
-				  message: error,
-			  });
-			}
+			fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token_ap,
+					},
+					body: data_body
+				})
+				.then(response => {
+					if (!response.ok) {
+						throw new Error(response);
+					}
+					return response.json();
+				})
+				.then(data => {
+					console.log('Order Created Successfully:', data);
+				})
+				.catch(error => {
+					console.error('sr order:', error);
+				});
 
 		} catch (error) {
 			console.error('Error:', error);
 			res.status(500).json({
-				message: error,
+				message: "before login in ship",
 			});
 		}
 
@@ -176,7 +163,7 @@ exports.ordercreate = async (req, res) => {
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({
-			message: error,
+			message: "before Razo",
 		});
 	}
 };
