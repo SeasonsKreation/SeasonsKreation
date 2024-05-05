@@ -5,19 +5,20 @@ const { use } = require("../router/routerapi.js");
 require("dotenv").config();
 
 exports.ordercreate = async (req, res) => {
+
 	try {
-		console.log("rz KEY", process.env.RAZORPAY_API_SECRET);
 
 		const instance = new Razorpay({
 			key_id: process.env.RAZORPAY_API_KEY,
 			key_secret: process.env.RAZORPAY_API_SECRET,
 		});
 
+		const recieptId = await crypto.randomBytes(10).toString("hex")
 		const options = {
-			amount: req.body.amount,
+			amount: Number(req.body.amount),
 			 // use rupee * 100 (if the amount is 10 rupees put 1000).
 			currency: "INR",
-			receipt: crypto.randomBytes(10).toString("hex"),
+			receipt: recieptId,
 		};
 
 		let newOrder = new Order({
@@ -25,8 +26,14 @@ exports.ordercreate = async (req, res) => {
 			purchaseDate: new Date(),
 			orderId: crypto.randomBytes(10).toString("hex"),
 			paymentStatus: "draft",
-			productDetails: req.body.productDetails,
-			addressinfo:req.body.checkoutInput,
+			productName: req.body.productDetails.pdtname,
+			customerName:req.body.addressinfo.fullname,
+			phone:req.body.addressinfo.phone,
+			email:req.body.addressinfo.email,
+			address:req.body.addressinfo.address,
+			pincode:req.body.addressinfo.pincode,
+			city:req.body.addressinfo.city,
+			state:req.body.addressinfo.state,
 		});
 
 		await newOrder.save();
@@ -34,7 +41,6 @@ exports.ordercreate = async (req, res) => {
 		instance.orders.create(options, (error, order) => {
 			
 			if (error) {
-				console.log("rz failed:",error);
 				return res.status(500).json({
 					message:
 						"Something went wrong while creating razorpay order.",
@@ -42,8 +48,6 @@ exports.ordercreate = async (req, res) => {
 						error,
 				});
 			}
-
-			console.log("rz order:",order)
 
 			return res.status(200).json({
 				data: order,
@@ -55,6 +59,14 @@ exports.ordercreate = async (req, res) => {
 
 		});
 
+		
+		var customerName = req.body.addressinfo.fullname;
+		var customerphone = req.body.addressinfo.phone;
+		var customeremail = req.body.addressinfo.email;
+		var customeraddress = req.body.addressinfo.address;
+		var customerpincode = req.body.addressinfo.pincode;
+		var customercity = req.body.addressinfo.city;
+		var customerstate = req.body.addressinfo.state;
 
 		try {
 
@@ -78,44 +90,61 @@ exports.ordercreate = async (req, res) => {
 		
 			const data_ap = await response.json();
 
-			var data_body = JSON.stringify({
-				"order_id": "224-447",
-				"order_date": "2019-07-24 11:11",
-				"pickup_location": "Jammu",
-				"channel_id": 1234,
+			const orders = req.body.productDetails.map((product) => {
+				return {
+				  name: product.pdtname,
+				  sku: product._id,
+				  units: 1, // Assuming each product is ordered once
+				  selling_price: product.price.toString(), // Converting to string as required
+				  discount: "0",
+				  tax: "0",
+				  hsn: 1189, // Not provided in the response
+				};
+			});
+
+			const currentDate = new Date();
+			const year = currentDate.getFullYear();
+			const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Month is zero-indexed, so add 1
+			const day = String(currentDate.getDate()).padStart(2, '0');
+			const hours = String(currentDate.getHours()).padStart(2, '0');
+			const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+
+			const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+			var data_body = {
+				"order_id": newOrder._id.toString(),
+				"order_date": formattedDate.toString(),
+				"pickup_location": "Jaipur",
+				// "channel_id": ,
 				"comment": "Reseller: M/s Goku",
-				"billing_customer_name": "Naruto",
-				"billing_last_name": "Uzumaki",
-				"billing_address": "House 221B, Leaf Village",
-				"billing_address_2": "Near Hokage House",
-				"billing_city": "New Delhi",
-				"billing_pincode": "110002",
-				"billing_state": "Delhi",
+				"reseller_name": "Reseller: M/s Goku",
+				"company_name": "Reseller: M/s Goku",
+				"billing_customer_name": customerName.toString(),
+				"billing_last_name": customerName.toString(),
+				"billing_address": customeraddress.toString(),
+				"billing_address_2": customeraddress.toString(),
+				"billing_city": customercity.toString(),
+
+				"billing_pincode": parseInt(customerpincode),
+				"billing_state": customerstate.toString(),
 				"billing_country": "India",
-				"billing_email": "naruto@uzumaki.com",
-				"billing_phone": "9876543210",
+				"billing_email": customeremail.toString(),
+				"billing_phone": parseInt(customerphone),
+
 				"shipping_is_billing": true,
-				"shipping_customer_name": "",
-				"shipping_last_name": "",
-				"shipping_address": "",
-				"shipping_address_2": "",
-				"shipping_city": "",
-				"shipping_pincode": "",
-				"shipping_country": "",
-				"shipping_state": "",
-				"shipping_email": "",
-				"shipping_phone": "",
-				"order_items": [
-					{
-					"name": "Kunai",
-					"sku": "chakra123",
-					"units": 10,
-					"selling_price": "900",
-					"discount": "",
-					"tax": "",
-					"hsn": 441122
-					}
-				],
+				"shipping_customer_name": customerName.toString(),
+				"shipping_last_name": customerName.toString(),
+				"shipping_address": customeraddress.toString(),
+				"shipping_address_2": customeraddress.toString(),
+				"shipping_city": customercity.toString(),
+
+				"shipping_pincode": parseInt(customerpincode),
+				"shipping_country": "India",
+				"shipping_state": customerstate.toString(),
+				"shipping_email": customeremail.toString(),
+				"shipping_phone": parseInt(customerphone),
+
+				"order_items": orders,
 				"payment_method": "Prepaid",
 				"shipping_charges": 0,
 				"giftwrap_charges": 0,
@@ -126,34 +155,40 @@ exports.ordercreate = async (req, res) => {
 				"breadth": 15,
 				"height": 20,
 				"weight": 2.5
-			  });
+			  };
 
 			const token_ap = data_ap.token;
-			console.log("sr token",token_ap);
+
 
 			fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': 'Bearer ' + token_ap,
-					},
-					body: data_body
-				})
-				.then(response => {
-					if (!response.ok) {
-						throw new Error(response);
-					}
-					return response.json();
-				})
-				.then(data => {
-					console.log('Order Created Successfully:', data);
-				})
-				.catch(error => {
-					console.error('sr order:', error);
+				method: 'POST',
+				maxBodyLength: Infinity,
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + token_ap,
+				},
+				body: JSON.stringify(data_body)
+			})
+			.then(response => {
+				if (!response.ok) {
+					throw new Error(response);
+				}
+				return response.json();
+			})
+			.then(data => {
+				res.status(200).json({
+					message: "Order Created Successfully",
+					data: data,
 				});
+			})
+			.catch(error => {
+				res.status(400).json({
+					message: "Couldn't create order in Shiprocket",
+					data: error,
+				});
+			});
 
 		} catch (error) {
-			console.error('Error:', error);
 			res.status(500).json({
 				message: "before login in ship",
 			});
@@ -161,7 +196,6 @@ exports.ordercreate = async (req, res) => {
 
 
 	} catch (error) {
-		console.log(error);
 		res.status(500).json({
 			message: "before Razo",
 		});
