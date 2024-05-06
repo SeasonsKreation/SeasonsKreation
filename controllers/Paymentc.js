@@ -108,13 +108,30 @@ exports.ordercreate = async (req, res) => {
 			const day = String(currentDate.getDate()).padStart(2, '0');
 			const hours = String(currentDate.getHours()).padStart(2, '0');
 			const minutes = String(currentDate.getMinutes()).padStart(2, '0');
-
 			const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
+			const token_ap = data_ap.token;
+
+			const picresponse = await fetch("https://apiv2.shiprocket.in/v1/external/settings/company/pickup", {
+				method: 'GET',
+				maxBodyLength: Infinity,
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + token_ap,
+				},
+			});			
+			if (!response.ok) {
+				return res.status(500).json({
+				  message:
+					  "Something went wrong while creating Shiprocket order.",
+			  	});
+		  	}
+
+			const data_pic = await picresponse.json();
 
 			var data_body = {
 				"order_id": newOrder._id.toString(),
 				"order_date": formattedDate.toString(),
-				"pickup_location": "Jaipur",
+				"pickup_location": data_pic.data.shipping_address[0].pickup_location.toString(),
 				// "channel_id": ,
 				"comment": "Reseller: M/s Goku",
 				"reseller_name": "Reseller: M/s Goku",
@@ -157,7 +174,6 @@ exports.ordercreate = async (req, res) => {
 				"weight": 2.5
 			  };
 
-			const token_ap = data_ap.token;
 
 
 			fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
@@ -177,7 +193,7 @@ exports.ordercreate = async (req, res) => {
 			})
 			.then(data => {
 				res.status(200).json({
-					message: "Order Created Successfully",
+					message: "success",
 					data: data,
 				});
 			})
