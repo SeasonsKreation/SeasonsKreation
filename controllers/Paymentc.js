@@ -38,26 +38,26 @@ exports.ordercreate = async (req, res) => {
 
 		await newOrder.save();
 
-		instance.orders.create(options, (error, order) => {
+		// instance.orders.create(options, (error, order) => {
 			
-			if (error) {
-				return res.status(500).json({
-					message:
-						"Something went wrong while creating razorpay order.",
-						data:
-						error,
-				});
-			}
+		// 	if (error) {
+		// 		return res.status(500).json({
+		// 			message:
+		// 				"Something went wrong while creating razorpay order.",
+		// 				data:
+		// 				error,
+		// 		});
+		// 	}
 
-			return res.status(200).json({
-				data: order,
-				payment: instance,
-				success: true,
-				message: "success",
-				orderId: newOrder._id,
-			});
+		// 	return res.status(200).json({
+		// 		data: order,
+		// 		payment: instance,
+		// 		success: true,
+		// 		message: "success",
+		// 		orderId: newOrder._id,
+		// 	});
 
-		});
+		// });
 
 		
 		var customerName = req.body.addressinfo.fullname;
@@ -202,7 +202,60 @@ exports.ordercreate = async (req, res) => {
 	}
 };
 
-exports.verifyOrder = async (req, res) => {
+exports.countOrder = async (req, res) => {
+
+	try {
+
+		const response = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
+		  method: 'POST',
+		  headers: {
+			'Content-Type': 'application/json'
+		  },
+		  body: JSON.stringify({
+			email: 'shiprocketweb@gmail.com',
+			password: 'Mohtashim@15'
+		  })
+		});
+	
+		if (!response.ok) {
+			  return res.status(500).json({
+				message:
+					"Something went wrong while creating Shiprocket order.",
+			});
+		}
+	
+		const data_ap = await response.json();
+		const token_ap = data_ap.token;
+	
+		fetch("https://apiv2.shiprocket.in/v1/external/orders", {
+			method: 'GET',
+			maxBodyLength: Infinity,
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer ' + token_ap,
+			},
+		})
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(response);
+			}
+			return response.json();
+		})
+		.then(data => {
+			res.status(200).json({
+				message: "Order Fetched Successfully",
+				data: data.data.length,
+			});
+		})
+
+	} catch (error) {
+		console.log(error);
+		return res.status(400).json({ message: error });
+	}
+
+}
+
+	exports.verifyOrder = async (req, res) => {
 	try {
 		const userData = req.body;
 
