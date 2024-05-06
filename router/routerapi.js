@@ -12,6 +12,7 @@ const multer = require("multer");
 
 router.post("/checkout", PaymentC.ordercreate);
 router.post("/verifyPayment", PaymentC.verifyOrder);
+router.get("/countOrder", PaymentC.countOrder);
 router.get('/showorders',PaymentC.showorders)
 router.get('/totalordercount',PaymentC.showtotalordercount)
 
