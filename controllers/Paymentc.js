@@ -38,26 +38,26 @@ exports.ordercreate = async (req, res) => {
 
 		await newOrder.save();
 
-		// instance.orders.create(options, (error, order) => {
+		instance.orders.create(options, (error, order) => {
 			
-		// 	if (error) {
-		// 		return res.status(500).json({
-		// 			message:
-		// 				"Something went wrong while creating razorpay order.",
-		// 				data:
-		// 				error,
-		// 		});
-		// 	}
+			if (error) {
+				return res.status(500).json({
+					message:
+						"Something went wrong while creating razorpay order.",
+						data:
+						error,
+				});
+			}
 
-		// 	return res.status(200).json({
-		// 		data: order,
-		// 		payment: instance,
-		// 		success: true,
-		// 		message: "success",
-		// 		orderId: newOrder._id,
-		// 	});
+			return res.status(200).json({
+				data: order,
+				payment: instance,
+				success: true,
+				message: "success",
+				orderId: newOrder._id,
+			});
 
-		// });
+		});
 
 		
 		var customerName = req.body.addressinfo.fullname;
