@@ -13,10 +13,10 @@ exports.ordercreate = async (req, res) => {
 			key_secret: process.env.RAZORPAY_API_SECRET,
 		});
 
-		const recieptId = await crypto.randomBytes(10).toString("hex")
+		const recieptId = await crypto.randomBytes(10).toString("hex");
+
 		const options = {
 			amount: Number(req.body.amount),
-			 // use rupee * 100 (if the amount is 10 rupees put 1000).
 			currency: "INR",
 			receipt: recieptId,
 		};
@@ -26,7 +26,7 @@ exports.ordercreate = async (req, res) => {
 			purchaseDate: new Date(),
 			orderId: crypto.randomBytes(10).toString("hex"),
 			paymentStatus: "draft",
-			productName: req.body.productDetails.pdtname,
+			productName: req.body.productDetails[0].pdtname,
 			customerName:req.body.addressinfo.fullname,
 			phone:req.body.addressinfo.phone,
 			email:req.body.addressinfo.email,
@@ -34,13 +34,17 @@ exports.ordercreate = async (req, res) => {
 			pincode:req.body.addressinfo.pincode,
 			city:req.body.addressinfo.city,
 			state:req.body.addressinfo.state,
+			productDetailsName: req.body.productDetails.map(item => item.pdtname),
+			purchaseDetailsName1: req.body.purchaseDetails.map(item => item.name1),
+			purchaseDetailsName2: req.body.purchaseDetails.map(item => item.name2?item.name2:''),
 		});
 
-		await newOrder.save();
+		const savedOrder = await newOrder.save();
 
 		instance.orders.create(options, (error, order) => {
 			
 			if (error) {
+				console.log("eror",error);
 				return res.status(500).json({
 					message:
 						"Something went wrong while creating razorpay order.",
@@ -55,23 +59,39 @@ exports.ordercreate = async (req, res) => {
 				success: true,
 				message: "success",
 				orderId: newOrder._id,
+				BodyReq: req.body,
 			});
 
 		});
 
+	} catch (error) {
+		res.status(500).json({
+			message: "before Razo",
+		});
+	}
+};
+
+exports.createShipIn = async (req, res) => {
+
+		console.log(req.body);
 		
-		var customerName = req.body.addressinfo.fullname;
-		var customerphone = req.body.addressinfo.phone;
-		var customeremail = req.body.addressinfo.email;
-		var customeraddress = req.body.addressinfo.address;
-		var customerpincode = req.body.addressinfo.pincode;
-		var customercity = req.body.addressinfo.city;
-		var customerstate = req.body.addressinfo.state;
+		const BodyAmount = req.body.BodyReq.amount/100;
+		const BodyReq = req.body.BodyReq;
+		const OrderId = req.body.OrderId;
+
+		var customerName = BodyReq.addressinfo.fullname;
+		var customerphone = BodyReq.addressinfo.phone;
+		var customeremail = BodyReq.addressinfo.email;
+		var customeraddress = BodyReq.addressinfo.address;
+		var customerpincode = BodyReq.addressinfo.pincode;
+		var customercity = BodyReq.addressinfo.city;
+		var customerstate = BodyReq.addressinfo.state;
 
 		try {
 
 			const response = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
-			  method: 'POST',
+				maxBodyLength: Infinity,
+				method: 'POST',
 			  headers: {
 				'Content-Type': 'application/json'
 			  },
@@ -90,17 +110,40 @@ exports.ordercreate = async (req, res) => {
 		
 			const data_ap = await response.json();
 
-			const orders = req.body.productDetails.map((product) => {
-				return {
-				  name: product.pdtname,
-				  sku: product._id,
-				  units: 1, // Assuming each product is ordered once
-				  selling_price: product.price.toString(), // Converting to string as required
-				  discount: "0",
-				  tax: "0",
-				  hsn: 1189, // Not provided in the response
+			// const orders = BodyReq.productDetails.map((product) => {
+			// 	return {
+			// 	  name: product.pdtname,
+			// 	  sku: product._id,
+			// 	  units: 1, // Assuming each product is ordered once
+			// 	  selling_price: product.price.toString(), // Converting to string as required
+			// 	  discount: "0",
+			// 	  tax: "0",
+			// 	  hsn: 1189, // Not provided in the response
+			// 	};
+			// });
+
+			const orders = [];
+			const productDetails = BodyReq.productDetails;
+			const purchaseDetails = BodyReq.purchaseDetails;
+
+			for (let i = 0; i < productDetails.length; i++) {
+				const product = productDetails[i];
+				const purchase = purchaseDetails[i];
+				const order = {
+					name: product.pdtname,
+					dualname1: purchase.name1,
+					dualname2: purchase.name2,
+					fontname: purchase.font,
+					quantity: purchase.quantity,
+					sku: product._id,
+					units: 1, // Assuming each product is ordered once
+					selling_price: product.price.toString(), // Converting to string as required
+					discount: "0",
+					tax: "0",
+					hsn: 1189, // Not provided in the response
 				};
-			});
+				orders.push(order);
+			}
 
 			const currentDate = new Date();
 			const year = currentDate.getFullYear();
@@ -110,6 +153,8 @@ exports.ordercreate = async (req, res) => {
 			const minutes = String(currentDate.getMinutes()).padStart(2, '0');
 			const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}`;
 			const token_ap = data_ap.token;
+
+			console.log("Token :",token_ap)
 
 			const picresponse = await fetch("https://apiv2.shiprocket.in/v1/external/settings/company/pickup", {
 				method: 'GET',
@@ -128,8 +173,10 @@ exports.ordercreate = async (req, res) => {
 
 			const data_pic = await picresponse.json();
 
+			console.log(data_pic)
+
 			var data_body = {
-				"order_id": newOrder._id.toString(),
+				"order_id": OrderId.toString(),
 				"order_date": formattedDate.toString(),
 				"pickup_location": data_pic.data.shipping_address[0].pickup_location.toString(),
 				// "channel_id": ,
@@ -167,7 +214,7 @@ exports.ordercreate = async (req, res) => {
 				"giftwrap_charges": 0,
 				"transaction_charges": 0,
 				"total_discount": 0,
-				"sub_total": 9000,
+				"sub_total": BodyAmount,
 				"length": 10,
 				"breadth": 15,
 				"height": 20,
@@ -176,33 +223,35 @@ exports.ordercreate = async (req, res) => {
 
 
 
-			fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
-				method: 'POST',
-				maxBodyLength: Infinity,
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': 'Bearer ' + token_ap,
-				},
-				body: JSON.stringify(data_body)
-			})
-			.then(response => {
+			
+
+			  	const orderResponse = await fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
+					method: 'POST',
+					maxBodyLength: Infinity,
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token_ap,
+					},
+					body: JSON.stringify(data_body)
+				})
 				if (!response.ok) {
-					throw new Error(response);
+					return res.status(400).json({
+					message:
+						"Couldn't create order in Shiprocket.",
+					});
 				}
-				return response.json();
-			})
-			.then(data => {
-				res.status(200).json({
-					message: "success",
-					data: data,
-				});
-			})
-			.catch(error => {
-				res.status(400).json({
-					message: "Couldn't create order in Shiprocket",
-					data: error,
-				});
-			});
+	
+				const data_order = await orderResponse.json();
+				
+				console.log(data_order);
+				// if(data_order){
+					res.status(200).json({
+						message: "success",
+						data_order: data_order,
+						data: BodyAmount,
+						amount: BodyAmount,
+					});
+				// }
 
 		} catch (error) {
 			res.status(500).json({
@@ -210,13 +259,7 @@ exports.ordercreate = async (req, res) => {
 			});
 		}
 
-
-	} catch (error) {
-		res.status(500).json({
-			message: "before Razo",
-		});
-	}
-};
+}
 
 exports.countOrder = async (req, res) => {
 
