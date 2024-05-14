@@ -24,6 +24,10 @@ const OrderSchema = new Schema(
 		razorPayId: { type: String },
 		amountPaid: { type: Number },
 		amountPaidOn: { type: Date },
+
+        productDetailsName: [String],
+        purchaseDetailsName1: [String],
+        purchaseDetailsName2: [String],
 		
 	},
 	{ timestamps: true }
