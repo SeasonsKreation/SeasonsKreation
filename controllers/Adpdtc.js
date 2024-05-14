@@ -225,13 +225,35 @@ exports.ids = async (req, res) => {
 	// console.log(req.body)
 	const { ids } = req.body;
 	try {
-		const record = await Pdtmodal.find({ _id: { $in: ids } });
-		// console.log(record);
+		
+		// const records = [];
+		// for (const id of ids) {
+		// 	const record = await Pdtmodal.find({ _id: id });
+		// 	records.push(...record);
+		// }
+		// console.log(records);
+		// res.json({
+		// 	status: 200,
+		// 	apiData: records,
+		// 	message: "success",
+		// });
+
+		const records = [];
+		for (let i = 0; i < ids.length; i++) {
+			
+			const id = ids[i];
+			const record = await Pdtmodal.find({ _id: id });
+			records.push(...record);
+
+		}
+
+		console.log(records);
 		res.json({
 			status: 200,
-			apiData: record,
+			apiData: records,
 			message: "success",
 		});
+
 	} catch (error) {
 		res.json({
 			status: 500,
