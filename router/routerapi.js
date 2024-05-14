@@ -13,6 +13,7 @@ const multer = require("multer");
 router.post("/checkout", PaymentC.ordercreate);
 router.post("/verifyPayment", PaymentC.verifyOrder);
 router.get("/countOrder", PaymentC.countOrder);
+router.post("/createShipIn", PaymentC.createShipIn);
 router.get('/showorders',PaymentC.showorders)
 router.get('/totalordercount',PaymentC.showtotalordercount)
 
@@ -45,6 +46,7 @@ let multiple = upload.fields([
 	{ name: "image", maxCount: 1 },
 	{ name: "image2", maxCount: 1 },
 ]);
+
 
 router.post("/signin", Adminreg.signin);
 router.post("/signup", Adminreg.signup);
