@@ -34,9 +34,9 @@ exports.ordercreate = async (req, res) => {
 			pincode:req.body.addressinfo.pincode,
 			city:req.body.addressinfo.city,
 			state:req.body.addressinfo.state,
-			productDetailsName: req.body.productDetails.map(item => item.pdtname),
-			purchaseDetailsName1: req.body.purchaseDetails.map(item => item.name1),
-			purchaseDetailsName2: req.body.purchaseDetails.map(item => item.name2?item.name2:''),
+			productDetailsName: req.body?.productDetails?.map(item => item.pdtname),
+			purchaseDetailsName1: req.body?.purchaseDetails?.map(item => item.name1),
+			purchaseDetailsName2: req.body?.purchaseDetails?.map(item => item.name2?item.name2:''),
 		});
 
 		const savedOrder = await newOrder.save();
