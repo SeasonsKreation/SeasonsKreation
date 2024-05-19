@@ -403,3 +403,58 @@ exports.showtotalordercount=async(req,res)=>{
       }
     
  }
+
+
+exports.trackOrder = async (req, res) => {
+    const id = req.params.shipment_id;
+	try {
+
+		const response = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
+		  method: 'POST',
+		  headers: {
+			'Content-Type': 'application/json'
+		  },
+		  body: JSON.stringify({
+			email: 'shiprocketweb@gmail.com',
+			password: 'Mohtashim@15'
+		  })
+		});
+	
+		if (!response.ok) {
+			  return res.status(500).json({
+				message:
+					"Something went wrong while creating Shiprocket order.",
+			});
+		}
+	
+		const data_ap = await response.json();
+		const token_ap = data_ap.token;
+
+		fetch("https://apiv2.shiprocket.in/v1/external/courier/track/shipment/"+id, {
+			method: 'GET',
+			maxBodyLength: Infinity,
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer ' + token_ap,
+			},
+		})
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(response);
+			}
+			return response.json();
+		})
+		.then(data => {
+			res.status(200).json({
+				message: "Shipment Fetched Successfully",
+				data: data,
+				status: 200,
+			});
+		})
+
+	} catch (error) {
+		console.log(error);
+		return res.status(400).json({ message: error });
+	}
+
+}
