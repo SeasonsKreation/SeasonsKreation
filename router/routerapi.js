@@ -16,6 +16,7 @@ router.get("/countOrder", PaymentC.countOrder);
 router.post("/createShipIn", PaymentC.createShipIn);
 router.get('/showorders',PaymentC.showorders)
 router.get('/totalordercount',PaymentC.showtotalordercount)
+router.get("/track_order/:shipment_id", PaymentC.trackOrder);
 
 let storage = multer.diskStorage({
 	destination: function (req, file, cb) {
