@@ -86,6 +86,8 @@ exports.createShipIn = async (req, res) => {
 		var customerpincode = BodyReq.addressinfo.pincode;
 		var customercity = BodyReq.addressinfo.city;
 		var customerstate = BodyReq.addressinfo.state;
+		var payMode = BodyReq.payMode?"COD":"Prepaid";
+
 
 		try {
 
@@ -209,7 +211,7 @@ exports.createShipIn = async (req, res) => {
 				"shipping_phone": parseInt(customerphone),
 
 				"order_items": orders,
-				"payment_method": "Prepaid",
+				"payment_method": payMode,
 				"shipping_charges": 0,
 				"giftwrap_charges": 0,
 				"transaction_charges": 0,
