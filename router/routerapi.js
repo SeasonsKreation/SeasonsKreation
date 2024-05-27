@@ -10,12 +10,12 @@ const PaymentC = require("../controllers/Paymentc");
 const SubemaiC=require('../controllers/Subemailc')
 const multer = require("multer");
 
-router.get("/checkout-get", PaymentC.showtotalordercount);
 router.post("/checkout", PaymentC.ordercreate);
 router.post("/verifyPayment", PaymentC.verifyOrder);
 router.get("/countOrder", PaymentC.countOrder);
 router.post("/createShipIn", PaymentC.createShipIn);
 router.get('/showorders',PaymentC.showorders)
+router.delete('/mmdel/:id',PaymentC.orderdel)
 router.get('/totalordercount',PaymentC.showtotalordercount)
 router.get("/track_order/:shipment_id", PaymentC.trackOrder);
 
@@ -78,6 +78,8 @@ router.get('/totalpdt',AdPdtc.showtotalpdtcount)
 //review config
 router.post("/addreview", upload.single("image"), Reviewc.addreview);
 router.get("/showalluserreview", Reviewc.showAllreview);
+router.get("/showreviewonadmin", Reviewc.showonadminpanel);
+
 
 //subemai
 router.post('/addsubemail',SubemaiC.addsubemail)

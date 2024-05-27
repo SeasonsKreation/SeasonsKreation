@@ -57,3 +57,23 @@ exports.showAllreview=async(req,res)=>{
 
     }
 }
+ 
+exports.showonadminpanel=async(req,res)=>{
+    try{
+        const record=await ReviewModal.find()
+        console.log(record)
+        res.json({
+            status:200,
+            apiData:record,
+            message:"success slection"
+        })
+
+    }catch(error){
+        res.json({
+            status:500,
+            message:"interal error"
+        })
+
+    }
+   
+}
