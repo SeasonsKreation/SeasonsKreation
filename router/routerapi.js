@@ -10,7 +10,6 @@ const PaymentC = require("../controllers/Paymentc");
 const SubemaiC=require('../controllers/Subemailc')
 const multer = require("multer");
 
-router.get("/checkout-get", PaymentC.showtotalordercount);
 router.post("/checkout", PaymentC.ordercreate);
 router.post("/verifyPayment", PaymentC.verifyOrder);
 router.get("/countOrder", PaymentC.countOrder);
