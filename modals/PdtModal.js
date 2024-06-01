@@ -22,6 +22,10 @@ const PdtSchema=  mongoose.Schema({
         type:String,
         required:true,
     },
+    desc:{
+        type:String,
+        required:true,
+    },
     
     status:{type:String,default:'Inactive'}
 })

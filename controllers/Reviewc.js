@@ -77,3 +77,16 @@ exports.showonadminpanel=async(req,res)=>{
     }
    
 }
+
+exports.reviewdelbyadmin=async(req,res)=>{
+    const id = req.params.id;
+	try {
+		await ReviewModal.findByIdAndDelete(id);
+		res.json({
+			status: 200,
+			message: "successfully Deleted",
+		});
+	} catch (error) {
+		res.json({ message: error.message });
+	}
+}

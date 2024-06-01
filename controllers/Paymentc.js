@@ -88,7 +88,6 @@ exports.createShipIn = async (req, res) => {
 		var customerstate = BodyReq.addressinfo.state;
 		var payMode = BodyReq.payMode?"COD":"Prepaid";
 
-
 		try {
 
 			const response = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
@@ -263,6 +262,7 @@ exports.createShipIn = async (req, res) => {
 
 }
 
+
 exports.countOrder = async (req, res) => {
 
 	try {
@@ -316,7 +316,7 @@ exports.countOrder = async (req, res) => {
 
 }
 
-	exports.verifyOrder = async (req, res) => {
+exports.verifyOrder = async (req, res) => {
 	try {
 		const userData = req.body;
 
@@ -356,6 +356,7 @@ exports.countOrder = async (req, res) => {
 				data: order,
 				paymentStatus: "paid",
 			});
+			
 		} else {
 			await Order.updateOne(
 				{ _id: orderId },
@@ -406,7 +407,21 @@ exports.showtotalordercount=async(req,res)=>{
     
  }
 
+ exports.orderdel = async (req, res) => {
+	const id = (req.params.id);
+	console.log(id)
+	try {
+		await Order.findByIdAndDelete(id);
+		res.json({
+			status: 200,
+			message: "successfully Deleted",
+		});
+	} catch (error) {
+		res.json({ message: error.message });
+	}
+}; 
 
+ 
 exports.trackOrder = async (req, res) => {
     const id = req.params.shipment_id;
 	try {

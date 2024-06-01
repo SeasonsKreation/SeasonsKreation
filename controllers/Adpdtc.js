@@ -1,8 +1,8 @@
 const Pdtmodal = require("../modals/PdtModal");
 
 exports.addpdtfromadmin = async (req, res) => {
-	const { pdtname, price, pcname } = req.body;
-	// console.log(req.body)
+	const { pdtname, price, pcname,descpdt } = req.body;
+	 console.log(req.body)
 	// console.log(req.files)
 	try {
 		if (req.files) {
@@ -13,6 +13,7 @@ exports.addpdtfromadmin = async (req, res) => {
 				image2: filename2,
 				pdtname: pdtname,
 				price: price,
+				desc:descpdt,
 				pcname:pcname || "singlename"
 			});
 			record.save();
@@ -25,6 +26,7 @@ exports.addpdtfromadmin = async (req, res) => {
 			const record = await new Pdtmodal({
 				pdtname: pdtname,
 				price: price,
+				desc:descpdt,
 				pcname:pcname || "singlename"
 			});
 			record.save();
@@ -93,7 +95,7 @@ exports.updatepdt = async (req, res) => {
 	// console.log(req.params.id)
 	// console.log(req.body)
 	// console.log(req.file)
-	const { pdtname, price, st,pcname } = req.body;
+	const { pdtname, price, st,pcname,descpdt } = req.body;
 	const id = req.params.id;
 	try {
 		if (req.files) {
@@ -107,6 +109,7 @@ exports.updatepdt = async (req, res) => {
 				price: price,
 				status: st,
 				pcname:pcname,
+				desc:descpdt,
 			};
 
 			if (req.files?.image?.length > 0) {
@@ -132,6 +135,7 @@ exports.updatepdt = async (req, res) => {
 				price: price,
 				status: st,
 				pcname:pcname,
+				desc:descpdt,
 			});
 			res.json({
 				status: 200,

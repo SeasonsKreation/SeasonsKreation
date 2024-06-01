@@ -79,6 +79,7 @@ router.get('/totalpdt',AdPdtc.showtotalpdtcount)
 router.post("/addreview", upload.single("image"), Reviewc.addreview);
 router.get("/showalluserreview", Reviewc.showAllreview);
 router.get("/showreviewonadmin", Reviewc.showonadminpanel);
+router.delete("/adminreviewdel/:id", Reviewc.reviewdelbyadmin);
 
 
 //subemai
