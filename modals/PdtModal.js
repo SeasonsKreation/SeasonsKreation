@@ -15,7 +15,7 @@ const PdtSchema=  mongoose.Schema({
         required:true,
     },
     image2:{
-        type:String,
+        type:Array,
         required:true,
     },
     pcname:{
@@ -26,7 +26,10 @@ const PdtSchema=  mongoose.Schema({
         type:String,
         required:true,
     },
-    
+    imagesraw:{
+        type: [String],
+        required:true,
+    },
     status:{type:String,default:'Inactive'}
 })
 

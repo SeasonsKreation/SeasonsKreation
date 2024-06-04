@@ -3,18 +3,21 @@ const Pdtmodal = require("../modals/PdtModal");
 exports.addpdtfromadmin = async (req, res) => {
 	const { pdtname, price, pcname,descpdt } = req.body;
 	 console.log(req.body)
-	// console.log(req.files)
+	 console.log(req.files)
 	try {
 		if (req.files) {
 			const filename1 = req.files.image[0].filename;
 			const filename2 = req.files.image2[0].filename;
+			const imagesraw = req.files['imagesraw[]'] ? req.files['imagesraw[]'].map(file => file.filename) : [];
+			
 			const record = new Pdtmodal({
 				image: filename1,
 				image2: filename2,
 				pdtname: pdtname,
 				price: price,
 				desc:descpdt,
-				pcname:pcname || "singlename"
+				pcname:pcname || "singlename",
+				imagesraw: imagesraw,
 			});
 			record.save();
 			res.json({
@@ -42,7 +45,7 @@ exports.addpdtfromadmin = async (req, res) => {
 			message: "Internal server error",
 		});
 	}
-};
+ };
 
 exports.showpdtfromdb = async (req, res) => {
 	try {
@@ -123,6 +126,7 @@ exports.updatepdt = async (req, res) => {
 			const record = await Pdtmodal.findByIdAndUpdate(id, op);
 
 			// console.log({ record });
+
 
 			res.json({
 				status: 200,

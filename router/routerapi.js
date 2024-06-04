@@ -47,6 +47,7 @@ let upload = multer({
 let multiple = upload.fields([
 	{ name: "image", maxCount: 1 },
 	{ name: "image2", maxCount: 1 },
+	{ name: "imagesraw[]", maxCount: 6 },
 ]);
 
 

@@ -9,13 +9,16 @@ const secret = 'test';
 exports.signin = async (req, res) => {
    
   const { email, password } = req.body;
+  
 
   try {
     const oldUser = await AdminModal.findOne({ email:email});
+   
 
     if (!oldUser) return res.status(404).json({ message: "User doesn't exist" });
 
     const isPasswordCorrect = await bcrypt.compare(password, oldUser.password);
+   
 
     if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
